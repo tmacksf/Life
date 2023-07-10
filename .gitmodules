@@ -1,0 +1,3 @@
+[submodule "res/TSL"]
+	path = res/TSL
+	url = https://github.com/tmacksf/TSL.git
