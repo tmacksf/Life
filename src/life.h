@@ -5,14 +5,7 @@
 #include "raylib.h"
 
 // enum for type of grid
-enum GridType {
-  CORNER,
-  TOP,
-  BOTTOM,
-  SIDE,
-  MIDDLE,
-  NONE,
-};
+enum GridType { TOP, LEFT, RIGHT, BOTTOM };
 
 // grid struct
 typedef struct Square {
@@ -20,7 +13,7 @@ typedef struct Square {
   int y;
   int active;
   int neighbours;
-  struct Square *around[8];
+  int around[8]; // indexes of the neighbours
 } Square;
 
 // main game loop
@@ -28,7 +21,7 @@ int gameLoop();
 
 int init_squares(vector *v, int gap, int size, int screeenWidth,
                  int screenHeight);
-void adding_neighbours(Square *s, int startingIndex);
+void adding_neighbours_side(Square *s, int cols, enum GridType g);
 
 void update_squares(vector *v);
 void update_individual_square(Square *s, int activeAround);

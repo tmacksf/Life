@@ -25,52 +25,82 @@ int init_squares(vector *v, int gap, int size, int screeenWidth,
   int cols = num / rows;
   // hard coding cuz im being lazy
   // setting neighbour pointers
-  // first row
+
+  // Corners
+  // Top left
   Square *s = vector_at(v, 0);
   s->neighbours = 3;
-
-  for (int c = 1; c < cols - 1; c++) {
-    s = vector_at(v, c);
-    s->neighbours = 5;
-  }
+  s->around[0] = 1;
+  s->around[1] = cols;
+  s->around[2] = cols + 1;
+  // Top right
   s = vector_at(v, cols - 1);
   s->neighbours = 3;
+  s->around[0] = cols - 2;
+  s->around[1] = cols * 2 - 1;
+  s->around[2] = cols * 2 - 2;
+  // Bottom left
+  s = vector_at(v, num - cols);
+  s->neighbours = 3;
+  s->around[0] = num - cols + 1;
+  s->around[1] = num - cols * 2;
+  s->around[1] = num - cols * 2 + 1;
+  // Bottom right
+  s = vector_at(v, num - 1);
+  s->neighbours = 3;
+
+  // Top row (minus corners)
+  for (int c = 1; c < cols - 1; c++) {
+    s = vector_at(v, c);
+    adding_neighbours_side(s, cols, TOP);
+  }
+
+  // Bottom row (minus corners)
+  for (int c = 1 + (num - cols); c < (num - 1); c++) {
+    s = vector_at(v, c);
+    adding_neighbours_side(s, cols, BOTTOM);
+  }
 
   // others
+  int index_adding[] = {
+      -1, 1, cols, cols - 1, cols + 1, -cols, -cols + 1, -cols - 1,
+  };
   for (int i = cols; i < (num - cols); i++) {
     // left side
     if (i % cols == 0) {
       s = vector_at(v, i);
       s->neighbours = 5;
+      adding_neighbours_side(s, cols, LEFT);
     }
     // right side
     else if (i % cols == (cols - 1)) {
-
       s = vector_at(v, i);
       s->neighbours = 5;
+      adding_neighbours_side(s, cols, RIGHT);
     }
     // middle
     else {
       s = vector_at(v, i);
       s->neighbours = 8;
+      for (int i = 0; i < 6; i++) {
+      }
     }
   }
-
-  // last row
-  s = vector_at(v, num - cols);
-  s->neighbours = 3;
-  for (int c = 1 + (num - cols); c < (num - 1); c++) {
-    s = vector_at(v, c);
-    s->neighbours = 5;
-  }
-  s = vector_at(v, num - 1);
-  s->neighbours = 3;
 
   return 0;
 }
 
-void adding_neighbours(Square *s, int startingIndex) {
-  for (int i = 0; i < s->neighbours; i++) {
+void adding_neighbours_side(Square *s, int cols, enum GridType g) {
+  int top_side[] = {-1, 1, cols, cols + 1, cols - 1};
+  // TODO: The rest of these
+  int left_side[] = {-1, 1, cols, cols + 1, cols - 1};
+  int right_side[] = {-1, 1, cols, cols + 1, cols - 1};
+  int bottom_side[] = {-1, 1, cols, cols + 1, cols - 1};
+  switch (g) {
+  case TOP:;
+  case LEFT:;
+  case RIGHT:;
+  case BOTTOM:;
   }
 }
 
