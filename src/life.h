@@ -3,6 +3,7 @@
 
 #include "../res/TSL/src/datastructures/vector.h"
 #include "raylib.h"
+#include <time.h>
 
 // enum for type of grid
 enum GridType { TOP, LEFT, RIGHT, BOTTOM };
@@ -21,8 +22,8 @@ int gameLoop();
 
 int init_squares(vector *v, int gap, int size, int screeenWidth,
                  int screenHeight);
-void adding_neighbours_side(Square *s, int cols, enum GridType g);
+void adding_neighbours_side(Square *s, int index, int cols, enum GridType g);
 
 void update_squares(vector *v);
-void update_individual_square(Square *s, int activeAround);
+void update_individual_square(vector *v, Square *s);
 #endif
