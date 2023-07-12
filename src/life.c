@@ -1,5 +1,7 @@
 #include "life.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 
 int init_squares(vector *v, int gap, int size, int screeenWidth,
                  int screenHeight) {
@@ -45,23 +47,25 @@ int init_squares(vector *v, int gap, int size, int screeenWidth,
   s->neighbours = 3;
   s->around[0] = num - cols + 1;
   s->around[1] = num - cols * 2;
-  s->around[1] = num - cols * 2 + 1;
-  // Bottom right
+  s->around[2] = num - cols * 2 + 1;
+  //  Bottom right
   s = vector_at(v, num - 1);
   s->neighbours = 3;
   s->around[0] = num - 2;
   s->around[1] = num - cols - 1;
-  s->around[1] = num - cols - 2;
+  s->around[2] = num - cols - 2;
 
   // Top row (minus corners)
   for (int c = 1; c < cols - 1; c++) {
     s = vector_at(v, c);
+    s->neighbours = 5;
     adding_neighbours_side(s, c, cols, TOP);
   }
 
   // Bottom row (minus corners)
   for (int c = 1 + (num - cols); c < (num - 1); c++) {
     s = vector_at(v, c);
+    s->neighbours = 5;
     adding_neighbours_side(s, c, cols, BOTTOM);
   }
 
@@ -98,9 +102,9 @@ int init_squares(vector *v, int gap, int size, int screeenWidth,
 void adding_neighbours_side(Square *s, int index, int cols, enum GridType g) {
   int top_side[] = {-1, 1, cols, cols + 1, cols - 1};
   // TODO: The rest of these
-  int left_side[] = {-1, 1, cols, cols + 1, cols - 1};
-  int right_side[] = {-1, 1, cols, cols + 1, cols - 1};
-  int bottom_side[] = {-1, 1, cols, cols + 1, cols - 1};
+  int left_side[] = {1, cols, cols + 1, -cols, -cols + 1};
+  int right_side[] = {-1, cols, cols - 1, -cols, -cols - 1};
+  int bottom_side[] = {-1, 1, -cols, -cols + 1, -cols - 1};
   switch (g) {
   case TOP:
     for (int i = 0; i < 5; i++) {
@@ -125,41 +129,47 @@ void adding_neighbours_side(Square *s, int index, int cols, enum GridType g) {
   }
 }
 
-void update_individual_square(vector *v, Square *s) {
+int update_individual_square(vector *v, Square *s) {
   int activeAround = 0;
   for (int i = 0; i < s->neighbours; i++) {
     Square *neighbour = vector_at(v, s->around[i]);
-    if (neighbour->active)
-      activeAround++;
+    activeAround += neighbour->active;
   }
 
   if (s->active) {
     switch (activeAround) {
     case 2:
-      s->active = 1;
+      return 1;
     case 3:
-      s->active = 1;
+      return 1;
     default:
-      s->active = 0;
+      return 0;
     }
   } else {
     switch (activeAround) {
     case 3:
-      s->active = 1;
+      return 1;
     default:
-      s->active = 0;
+      return 0;
     }
   }
 }
 
-void update_squares(vector *v) {
+void update_squares(vector *v, int squareNum) {
+  int allUpdates[squareNum];
   for (int i = 0; i < v->size; i++) {
     Square *s = vector_at(v, i);
+    allUpdates[i] = update_individual_square(v, s);
+  }
+
+  for (int i = 0; i < v->size; i++) {
+    Square *s = vector_at(v, i);
+    s->active = allUpdates[i];
   }
 }
 
 // Temp function randomise
-void randomise(vector *v) {
+void randomise_active(vector *v) {
   srand(time(0));
   for (int i = 0; i < v->size; i++) {
     if ((rand() % 2) == 1) {
@@ -171,27 +181,34 @@ void randomise(vector *v) {
 
 int gameLoop() {
   // variables
-  int width = 1200;
-  int height = 800;
+  const int width = 1200;
+  const int height = 800;
   const int gap = 2;
   const int size = 20;
 
   vector *v = vector_init(sizeof(Square));
   init_squares(v, gap, 20, width, height);
+
+  for (int i = 0; i < v->size; i++) {
+    Square *s = vector_at(v, i);
+    printf("Index: %d", i);
+    for (int n = 0; n < s->neighbours; n++) {
+      printf(", %d", s->around[n]);
+    }
+    printf("\n");
+  }
   InitWindow(width, height, "test");
 
   // game control
   int space_pressed = 1;
   SetTargetFPS(30);
-  randomise(v);
+  randomise_active(v);
 
   while (!WindowShouldClose()) {
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
 
-    // first 2 give location, 2nd 2 give size
-    //  DrawRectangle(2, 2, 20, 20, BLUE);
     for (int i = 0; i < v->size; i++) {
       Square *s = vector_at(v, i);
       Color c;
@@ -201,17 +218,15 @@ int gameLoop() {
         c = LIGHTGRAY;
       DrawRectangle(s->x, s->y, size, size, c);
     }
-    update_squares(v);
 
-    /*
     if (IsKeyPressed(KEY_SPACE)) {
       space_pressed = 1 - space_pressed;
     }
 
     if (!space_pressed) {
-      update_squares(v);
+      update_squares(v, v->size);
+      space_pressed = 1;
     }
-    */
 
     EndDrawing();
   }

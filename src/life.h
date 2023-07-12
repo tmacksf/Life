@@ -24,6 +24,6 @@ int init_squares(vector *v, int gap, int size, int screeenWidth,
                  int screenHeight);
 void adding_neighbours_side(Square *s, int index, int cols, enum GridType g);
 
-void update_squares(vector *v);
-void update_individual_square(vector *v, Square *s);
+void update_squares(vector *v, int squareNum);
+int update_individual_square(vector *v, Square *s);
 #endif

@@ -1,9 +1,8 @@
 #include "life.h"
-#include "raylib.h"
 #include <stdio.h>
 
 int main() {
-  printf("Bruh1 ");
+  printf("Life\n");
 
   gameLoop();
 
