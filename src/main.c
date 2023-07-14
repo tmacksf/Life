@@ -1,3 +1,4 @@
+
 #include "life.h"
 #include <stdio.h>
 
