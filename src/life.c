@@ -5,6 +5,8 @@
 
 int init_squares(vector *v, int gap, int size, int screeenWidth,
                  int screenHeight) {
+  // TODO: Redo this to make the entire surrounding area a buffer zone so only
+  // need to look at square with 8 neighbours
   int filled = 0;
   int totalSize = size + gap;
   int y = gap;
@@ -189,20 +191,15 @@ int gameLoop() {
   vector *v = vector_init(sizeof(Square));
   init_squares(v, gap, 20, width, height);
 
-  for (int i = 0; i < v->size; i++) {
-    Square *s = vector_at(v, i);
-    printf("Index: %d", i);
-    for (int n = 0; n < s->neighbours; n++) {
-      printf(", %d", s->around[n]);
-    }
-    printf("\n");
-  }
   InitWindow(width, height, "test");
 
   // game control
   int space_pressed = 1;
-  SetTargetFPS(30);
+  SetTargetFPS(60);
   randomise_active(v);
+
+  int frame_skip = 5;
+  int current_frame_skip = frame_skip;
 
   while (!WindowShouldClose()) {
     BeginDrawing();
@@ -223,9 +220,38 @@ int gameLoop() {
       space_pressed = 1 - space_pressed;
     }
 
-    if (!space_pressed) {
+    if (!space_pressed && !current_frame_skip) {
       update_squares(v, v->size);
-      space_pressed = 1;
+      current_frame_skip = frame_skip;
+    } else if (!space_pressed && current_frame_skip) {
+      current_frame_skip -= 1;
+    }
+
+    if (IsKeyPressed(KEY_LEFT)) {
+      frame_skip += 1;
+    }
+
+    if (IsKeyPressed(KEY_RIGHT)) {
+      if (frame_skip)
+        frame_skip -= 1;
+    }
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      // Mouse button down to change the value of a square
+      // run through every square to see if its correct (not going to be pressed
+      // all the time so no need for intense optimisation)
+      Vector2 pos = GetMousePosition();
+      int x = (int)pos.x;
+      int y = (int)pos.y;
+      // need to check if it is in the bounds of a given square
+      for (int i = 0; i < v->size; i++) {
+        Square *s = vector_at(v, i);
+        if ((x >= s->x) && (x <= s->x + size) && (y >= s->y) &&
+            (y <= s->y + size)) {
+          s->active = 1 - s->active;
+          break;
+        }
+      }
     }
 
     EndDrawing();
