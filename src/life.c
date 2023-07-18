@@ -236,7 +236,8 @@ int gameLoop() {
         frame_skip -= 1;
     }
 
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    // if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
       // Mouse button down to change the value of a square
       // run through every square to see if its correct (not going to be pressed
       // all the time so no need for intense optimisation)
