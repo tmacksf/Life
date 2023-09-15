@@ -1,29 +1,41 @@
 #ifndef LIFE_H
 #define LIFE_H
 
-#include "../res/TSL/src/datastructures/vector.h"
-#include "raylib.h"
-#include <time.h>
+#include "external/Raylib/raylib.h"
+#include "external/TSL/src/datastructures/vector.h"
+#include "time.h"
 
-// enum for type of grid
-enum GridType { TOP, LEFT, RIGHT, BOTTOM };
+/* Enum for type of grid */
+typedef enum GridType { TOP, LEFT, RIGHT, BOTTOM } GridType;
 
-// grid struct
-typedef struct Square {
+/* Cell struct */
+typedef struct Cell {
   int x;
   int y;
   int active;
   int neighbours;
-  int around[8]; // indexes of the neighbours
-} Square;
+  int around[8]; /* indexes of the neighbours */
+} Cell;
 
-// main game loop
 int gameLoop();
 
-int init_squares(vector *v, int gap, int size, int screeenWidth,
-                 int screenHeight);
-void adding_neighbours_side(Square *s, int index, int cols, enum GridType g);
+/* Initialises all cells based on info:
+ * gap: gap between cells
+ * size: size of the cells
+ * screeenWidth
+ * screenHeight*/
+Vector *initCells(int gap, int size, int screenWidth, int screenHeight);
 
-void update_squares(vector *v, int squareNum);
-int update_individual_square(vector *v, Square *s);
+/* Creates corner squares */
+void cornerCells(Vector *v, int rows, int cols, int num);
+
+/* Takes a cell and adds the index of the neightbours to around[] */
+void addingNeighboursSide(Cell *cell, int index, int cols, GridType g);
+
+/* Updates all squares for next frame */
+void updateCells(Vector *v, int squareNum);
+
+/* takes a cell and updates for the next frame */
+int updateIndividualCell(Vector *v, Cell *cell);
+
 #endif
