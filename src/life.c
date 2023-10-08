@@ -24,8 +24,7 @@ Vector *initCells(int gap, int size, int screenWidth, int screenHeight) {
   }
   int cols = num / rows;
   printf("Rows: %d, Cols: %d, Total squares %d, Cell Size: %d, Gap Size: %d, "
-         "Total "
-         "Size %d\n",
+         "Total Size %d\n",
          rows, cols, num, size, gap, totalSize);
 
   /* possible directions of neightbours */
@@ -56,7 +55,6 @@ Vector *initCells(int gap, int size, int screenWidth, int screenHeight) {
       c->around[index] = i + directions[n];
       index++;
     }
-    // c->neighbours = index;
     c->neighbours = index;
   }
   return v;
@@ -89,7 +87,7 @@ int updateIndividualCell(Vector *v, Cell *cell) {
 }
 
 void updateCells(Vector *v, int squareNum) {
-  int allUpdates[squareNum];
+  int *allUpdates = malloc(squareNum * sizeof(int));
   for (int i = 0; i < v->size; i++) {
     Cell *cell = vector_at(v, i);
     allUpdates[i] = updateIndividualCell(v, cell);
@@ -99,6 +97,9 @@ void updateCells(Vector *v, int squareNum) {
     Cell *cell = vector_at(v, i);
     cell->active = allUpdates[i];
   }
+  // TODO: Make this persistent and only declared once so there is no need to
+  // allocate and free every time
+  free(allUpdates);
 }
 
 /* Temp function randomise */
