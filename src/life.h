@@ -26,12 +26,6 @@ int gameLoop();
  * screenHeight*/
 Vector *initCells(int gap, int size, int screenWidth, int screenHeight);
 
-/* Creates corner squares */
-void cornerCells(Vector *v, int rows, int cols, int num);
-
-/* Takes a cell and adds the index of the neightbours to around[] */
-void addingNeighboursSide(Cell *cell, int index, int cols, GridType g);
-
 /* Updates all squares for next frame */
 void updateCells(Vector *v, int squareNum);
 
