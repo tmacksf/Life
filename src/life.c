@@ -3,19 +3,17 @@
 
 Vector *initCells(int gap, int size, int screenWidth, int screenHeight) {
   Vector *v = vector_init(sizeof(Cell));
-  /* TODO: Redo this to make the entire surrounding area a buffer zone so only
-   * need to look at square with 8 neighbours */
-  int filled = 0;
   int totalSize = size + gap;
   int y = gap;
   int num = 0;
   int rows = 0;
 
   /* counting size */
+  int filled = 0;
   while (!filled) {
     rows++;
     for (int x = gap; x < screenWidth; x += totalSize) {
-      Cell cell = {x, y, 0, 0};
+      Cell cell = {.x = x, .y = y, .active = 0, .neighbours = 0};
       vector_add(v, &cell);
       num++;
     }
@@ -24,112 +22,44 @@ Vector *initCells(int gap, int size, int screenWidth, int screenHeight) {
       filled = 1;
     }
   }
-  printf("Rows: %d, Total squares %d, Cell Size: %d, Gap Size: %d, Total "
-         "Size %d\n",
-         rows, num, size, gap, totalSize);
-
   int cols = num / rows;
-  cornerCells(v, rows, cols, num);
-  Cell *cell;
+  printf("Rows: %d, Cols: %d, Total squares %d, Cell Size: %d, Gap Size: %d, "
+         "Total "
+         "Size %d\n",
+         rows, cols, num, size, gap, totalSize);
 
-  /* Top row (minus corners) */
-  for (int c = 1; c < cols - 1; c++) {
-    cell = vector_at(v, c);
-    cell->neighbours = 5;
-    addingNeighboursSide(cell, c, cols, TOP);
-  }
-
-  /* Bottom row (minus corners) */
-  for (int c = 1 + (num - cols); c < (num - 1); c++) {
-    cell = vector_at(v, c);
-    cell->neighbours = 5;
-    addingNeighboursSide(cell, c, cols, BOTTOM);
-  }
-
-  int indexAdding[] = {
+  /* possible directions of neightbours */
+  int directions[8] = {
       -1, 1, cols, cols - 1, cols + 1, -cols, -cols + 1, -cols - 1,
   };
-  for (int i = cols; i < (num - cols); i++) {
-    /* Left side */
-    if (i % cols == 0) {
-      cell = vector_at(v, i);
-      cell->neighbours = 5;
-      addingNeighboursSide(cell, i, cols, LEFT);
-    }
-    /* right side */
-    else if (i % cols == (cols - 1)) {
-      cell = vector_at(v, i);
-      cell->neighbours = 5;
-      addingNeighboursSide(cell, i, cols, RIGHT);
-    }
-    /* middle */
-    else {
-      cell = vector_at(v, i);
-      cell->neighbours = 8;
-      for (int j = 0; j < 8; j++) {
-        cell->around[j] = i + indexAdding[j];
-      }
-    }
-  }
+  for (int i = 0; i < num; i++) {
+    /* For every cell we go over potential neighbours to see if they should be
+     * added Have 8 neighbours max */
+    Cell *c = vector_at(v, i);
+    /* used within the cell to assign neighbourIndex */
+    int index = 0;
+    for (int n = 0; n < 8; n++) {
+      /* check bounds of additions */
+      int neighbourIndex = i + directions[n];
+      /* Dealing with top and bottom */
+      if (neighbourIndex > num || neighbourIndex < 0)
+        continue;
 
+      /* Dealing with left side */
+      if (i % cols == 0 && (n == 0 || n == 3 || n == 7))
+        continue;
+
+      /* Dealing with right side */
+      if (i % cols == (cols - 1) && (n == 1 || n == 4 || n == 6))
+        continue;
+
+      c->around[index] = i + directions[n];
+      index++;
+    }
+    // c->neighbours = index;
+    c->neighbours = index;
+  }
   return v;
-}
-
-void cornerCells(Vector *v, int rows, int cols, int num) {
-  /* Top left */
-  Cell *cell = vector_at(v, 0);
-  cell->neighbours = 3;
-  cell->around[0] = 1;
-  cell->around[1] = cols;
-  cell->around[2] = cols + 1;
-  /* Top right */
-  cell = vector_at(v, cols - 1);
-  cell->neighbours = 3;
-  cell->around[0] = cols - 2;
-  cell->around[1] = cols * 2 - 1;
-  cell->around[2] = cols * 2 - 2;
-  /* Bottom left */
-  cell = vector_at(v, num - cols);
-  cell->neighbours = 3;
-  cell->around[0] = num - cols + 1;
-  cell->around[1] = num - cols * 2;
-  cell->around[2] = num - cols * 2 + 1;
-  /*  Bottom right */
-  cell = vector_at(v, num - 1);
-  cell->neighbours = 3;
-  cell->around[0] = num - 2;
-  cell->around[1] = num - cols - 1;
-  cell->around[2] = num - cols - 2;
-}
-
-void addingNeighboursSide(Cell *cell, int index, int cols, enum GridType g) {
-  int topSide[] = {-1, 1, cols, cols + 1, cols - 1};
-  /* TODO: The rest of these */
-  int leftSide[] = {1, cols, cols + 1, -cols, -cols + 1};
-  int rightSide[] = {-1, cols, cols - 1, -cols, -cols - 1};
-  int bottomSide[] = {-1, 1, -cols, -cols + 1, -cols - 1};
-  switch (g) {
-  case TOP:
-    for (int i = 0; i < 5; i++) {
-      cell->around[i] = index + topSide[i];
-    }
-    break;
-  case LEFT:
-    for (int i = 0; i < 5; i++) {
-      cell->around[i] = index + leftSide[i];
-    }
-    break;
-  case RIGHT:
-    for (int i = 0; i < 5; i++) {
-      cell->around[i] = index + rightSide[i];
-    }
-    break;
-  case BOTTOM:
-    for (int i = 0; i < 5; i++) {
-      cell->around[i] = index + bottomSide[i];
-    }
-    break;
-  }
 }
 
 int updateIndividualCell(Vector *v, Cell *cell) {
@@ -184,10 +114,10 @@ void randomiseActive(Vector *v) {
 
 int gameLoop() {
   /* variables */
-  const int width = 1200;
-  const int height = 800;
+  const int width = 800;
+  const int height = 600;
   const int gap = 1;
-  const int size = 5;
+  const int size = 10;
 
   Vector *squareVector = initCells(gap, size, width, height);
 
