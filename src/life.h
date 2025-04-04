@@ -1,7 +1,7 @@
 #ifndef LIFE_H
 #define LIFE_H
 
-#include "external/Raylib/raylib.h"
+#include "external/raylib/src/raylib.h"
 #include "external/TSL/src/datastructures/vector.h"
 #include "time.h"
 
